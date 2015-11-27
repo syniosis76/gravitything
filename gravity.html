@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gravity</title>
+    <link rel="stylesheet" type="text/css" href="gravity.css">
+    <script>
+        
+    </script>
+</head>
+<body>
+    <div class="contentFull row">
+        <div id="space" class="space"></div>
+    </div>
+    <div class="footer row">
+        <span class="footer-title">Gravity</span>
+        <span id="current-time" class="footer-time">...</span>
+    </div>
+
+    <script>
+		function refreshEvent() {
+            showTime();
+			updateBodies();
+        }
+
+        function showTime() {
+            var currentTime = new Date();
+            document.getElementById("current-time").innerHTML = currentTime.toLocaleTimeString('en-GB', { hour12: false });
+        }
+				
+
+        function startTimer() {
+            var refreshTimer = setInterval(function () { refreshEvent() }, 30);
+        }
+		
+		function keyPressEvent(e)
+		{
+			if(e.keyCode == 97) { // a - left
+				updateBodyMotion({speed: 0, direction: -10})
+			}
+			else if(e.keyCode == 100) { // d - right
+				updateBodyMotion({speed: 0, direction: 10})
+			}  
+			else if(e.keyCode == 119) { // w - up
+				updateBodyMotion({speed: 1, direction: 0})
+			}
+			else if(e.keyCode == 115) { // s - down
+				updateBodyMotion({speed: -1, direction: 0})
+			}
+		}
+		
+		var bodies = []
+		
+		function createBodyElement(body) {
+			body.element = document.createElementNS("http://www.w3.org/2000/svg", "svg");					
+			body.circleElement = document.createElementNS("http://www.w3.org/2000/svg", "circle");						
+			body.element.appendChild(body.circleElement);
+			
+			updateBodyElement(body);
+		}
+		
+		function updateBodyElement(body) {
+			body.element.style.position = "absolute";
+			body.element.style.left = body.x + 'px';
+			body.element.style.top = body.y + 'px';
+			body.element.setAttribute("height", body.size);
+			body.element.setAttribute("width", body.size);
+			
+			var radius = body.size / 2
+			body.circleElement.setAttribute("cx", body.size / 2);
+			body.circleElement.setAttribute("cy", body.size / 2);
+			body.circleElement.setAttribute("r",  body.size / 2);
+			body.circleElement.setAttribute("fill", body.color);
+		}
+		
+		function addBody(body) {
+			var space = document.getElementById("space");
+			
+			createBodyElement(body);
+			bodies.push(body);		
+			space.appendChild(body.element);
+		}
+		
+		function getRandomColor() {
+			var letters = '0123456789ABCDEF'.split('');
+			var color = '#';
+			for (var i = 0; i < 6; i++ ) {
+				color += letters[Math.floor(Math.random() * 16)];
+			}
+			return color;
+		}
+				
+		function loadBodies() {											
+			var buffer = 20;
+			var bufferedWidth = document.body.scrollWidth - (buffer * 2);
+			var bufferedHeight = document.body.scrollHeight - (buffer * 2);
+			for (var i = 0; i < 50; i++) {				
+				addBody({name: "Earth"
+					, x: (Math.random() * bufferedWidth) + buffer
+					, y: (Math.random() * bufferedHeight) + buffer
+					, size: (Math.random() * 80) + 10
+					, color: getRandomColor()
+					, speed: (Math.random() * 5) + 0.1
+					, direction: (Math.random() * 360)}); 
+			}
+        }
+		
+		function updateBodies() {
+			for (var i = 0, len = bodies.length; i < len; i++) {
+				var body = bodies[i];
+				
+				var directionRadians = body.direction * (Math.PI / 180);
+				var xSpeed = Math.cos(directionRadians) * body.speed;
+				var ySpeed = Math.sin(directionRadians) * body.speed;
+				
+				body.x += xSpeed;
+				body.y += ySpeed;
+				updateBodyElement(body);
+			}
+		}
+		
+		function updateBodyMotion(motionChange) {
+			for (var i = 0, len = bodies.length; i < len; i++) {
+				var body = bodies[i];
+				
+				body.direction += motionChange.direction;
+				body.speed += motionChange.speed;				
+			}
+		}
+		
+		function initialiseSpace() {
+            loadBodies();
+			document.onkeypress = keyPressEvent;
+			startTimer();
+        }
+       	
+		initialiseSpace();
+    </script>
+</body>
+</html>
